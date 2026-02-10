@@ -1,39 +1,12 @@
-# 📦 Compacted Trade - Trade Sites Manager
+# 무역 사이트 매니저
 
-무역 관련 웹사이트를 효율적으로 관리하는 웹 애플리케이션입니다.
+Supabase와 연동된 무역 관련 사이트 관리 애플리케이션입니다.
 
 ## 기능
+- ✅ 사이트 추가/수정/삭제
+- ✅ Supabase 데이터베이스 연동
+- ✅ 로컬 스토리지에서 자동 마이그레이션
 
-- ✅ **새 사이트 추가** - 사이트 이름, URL, 설명을 입력하여 추가
-- ✏️ **사이트 수정** - 기존 사이트 정보 편집
-- 🗑️ **사이트 삭제** - 등록된 사이트 삭제
-- 💾 **로컬 저장소** - localStorage를 사용하여 브라우저에 자동 저장
-- 📱 **반응형 디자인** - 모바일, 태블릿, 데스크톱 모두 지원
-- 🎨 **모던 UI** - 깔끔하고 직관적인 인터페이스
-
-## 사용 방법
-
-1. `trade-sites-manager.html` 파일을 웹 브라우저에서 열기
-2. 사이트 이름과 URL을 입력하고 "추가" 버튼 클릭
-3. 등록된 사이트 카드에서 수정 또는 삭제 가능
-
-## 기술 스택
-
-- HTML5
-- CSS3
-- JavaScript (Vanilla)
-- localStorage API
-
-## 주요 기능 상세
-
-### 데이터 보존
-- 모든 데이터는 localStorage에 자동으로 저장됨
-- 브라우저 종료 후에도 데이터 유지
-
-### 보안
-- XSS 공격 방지를 위한 HTML 이스케이핑 처리
-- 입력 값 검증 (필수 필드 확인)
-
-## 라이선스
-
-MIT License
+## 배포
+- Vercel: https://compacted-trade-1fgw.vercel.app/
+- Supabase: https://nzkewzfsktdfwykjdmwl.supabase.co
