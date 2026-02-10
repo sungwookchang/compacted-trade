@@ -330,31 +330,94 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        let sites = JSON.parse(localStorage.getItem('tradeSites')) || [];
-        let editingId = null;
+        // Supabase 초기화
+        const SUPABASE_URL = 'https://nzkewzfsktdfwykjdmwl.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56a2V3emZza3RkZnd5a2pkbXdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3MDgwNTQsImV4cCI6MjA4NjI4NDA1NH0.6UXcSFXuGJclsnGsVp9gyTrG635T5SoGycZAnjkoGs0';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        function addSite() {
+        let sites = [];
+        let editingId = null;
+        let isLoading = false;
+
+        // 로컬 스토리지에서 기존 데이터 마이그레이션 (초기화 시 한 번만)
+        async function migrateLocalData() {
+            const localData = JSON.parse(localStorage.getItem('tradeSites')) || [];
+            if (localData.length > 0) {
+                try {
+                    console.log('📤 로컬 데이터 마이그레이션 시작:', localData.length + '개 항목');
+                    for (const site of localData) {
+                        await supabase.from('address_collection').insert({
+                            id: site.id,
+                            name: site.name,
+                            url: site.url,
+                            description: site.desc
+                        });
+                    }
+                    localStorage.removeItem('tradeSites');
+                    console.log('✅ 로컬 데이터 마이그레이션 완료');
+                } catch (error) {
+                    console.error('❌ 마이그레이션 오류:', error);
+                }
+            }
+        }
+
+        // Supabase에서 모든 사이트 로드
+        async function loadSites() {
+            try {
+                isLoading = true;
+                console.log('🔄 Supabase에서 사이트 로드 중...');
+                const { data, error } = await supabase
+                    .from('address_collection')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                sites = data || [];
+                console.log('✅ 사이트 로드 완료:', sites.length + '개');
+                renderSites();
+            } catch (error) {
+                console.error('❌ 사이트 로드 오류:', error);
+                alert('데이터를 불러오는 중 오류가 발생했습니다.');
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        async function addSite() {
             const name = document.getElementById('siteName').value.trim();
             const url = document.getElementById('siteUrl').value.trim();
-            const desc = document.getElementById('siteDesc').value.trim();
+            const description = document.getElementById('siteDesc').value.trim();
 
             if (!name || !url) {
                 alert('사이트 이름과 URL을 입력해주세요.');
                 return;
             }
 
-            const site = {
-                id: Date.now(),
-                name,
-                url,
-                desc
-            };
+            try {
+                const id = Date.now();
+                console.log('📤 Supabase에 데이터 전송 시작:', { id, name, url, description });
 
-            sites.push(site);
-            saveSites();
-            clearForm();
-            renderSites();
+                const { data, error } = await supabase.from('address_collection').insert({
+                    id,
+                    name,
+                    url,
+                    description
+                });
+
+                if (error) {
+                    console.error('❌ Supabase 오류:', error);
+                    throw error;
+                }
+
+                console.log('✅ 데이터 저장 성공:', data);
+                clearForm();
+                await loadSites();
+            } catch (error) {
+                console.error('❌ 사이트 추가 오류:', error);
+                alert('사이트 추가 중 오류가 발생했습니다.\n\n오류: ' + error.message);
+            }
         }
 
         function clearForm() {
@@ -364,11 +427,21 @@
             document.getElementById('siteName').focus();
         }
 
-        function deleteSite(id) {
+        async function deleteSite(id) {
             if (confirm('이 사이트를 삭제하시겠습니까?')) {
-                sites = sites.filter(site => site.id !== id);
-                saveSites();
-                renderSites();
+                try {
+                    const { error } = await supabase
+                        .from('address_collection')
+                        .delete()
+                        .eq('id', id);
+
+                    if (error) throw error;
+                    console.log('✅ 사이트 삭제 완료:', id);
+                    await loadSites();
+                } catch (error) {
+                    console.error('❌ 사이트 삭제 오류:', error);
+                    alert('사이트 삭제 중 오류가 발생했습니다.');
+                }
             }
         }
 
@@ -377,7 +450,7 @@
             const site = sites.find(s => s.id === id);
             document.getElementById('editName').value = site.name;
             document.getElementById('editUrl').value = site.url;
-            document.getElementById('editDesc').value = site.desc;
+            document.getElementById('editDesc').value = site.description || '';
             document.getElementById('editModal').classList.add('active');
             document.getElementById('editName').focus();
         }
@@ -387,27 +460,31 @@
             editingId = null;
         }
 
-        function saveEdit() {
+        async function saveEdit() {
             const name = document.getElementById('editName').value.trim();
             const url = document.getElementById('editUrl').value.trim();
-            const desc = document.getElementById('editDesc').value.trim();
+            const description = document.getElementById('editDesc').value.trim();
 
             if (!name || !url) {
                 alert('사이트 이름과 URL을 입력해주세요.');
                 return;
             }
 
-            const siteIndex = sites.findIndex(s => s.id === editingId);
-            if (siteIndex !== -1) {
-                sites[siteIndex] = { ...sites[siteIndex], name, url, desc };
-                saveSites();
-                renderSites();
-                closeModal();
-            }
-        }
+            try {
+                const { error } = await supabase
+                    .from('address_collection')
+                    .update({ name, url, description })
+                    .eq('id', editingId);
 
-        function saveSites() {
-            localStorage.setItem('tradeSites', JSON.stringify(sites));
+                if (error) throw error;
+
+                console.log('✅ 사이트 수정 완료:', editingId);
+                await loadSites();
+                closeModal();
+            } catch (error) {
+                console.error('❌ 사이트 수정 오류:', error);
+                alert('사이트 수정 중 오류가 발생했습니다.');
+            }
         }
 
         function renderSites() {
@@ -425,7 +502,7 @@
                 <div class="site-card">
                     <div class="site-name">${escapeHtml(site.name)}</div>
                     <a href="${site.url}" target="_blank" class="site-url">${escapeHtml(site.url)}</a>
-                    <div class="site-desc">${escapeHtml(site.desc)}</div>
+                    <div class="site-desc">${escapeHtml(site.description || '')}</div>
                     <div class="card-buttons">
                         <button class="btn-edit" onclick="openEditModal(${site.id})">수정</button>
                         <button class="btn-delete" onclick="deleteSite(${site.id})">삭제</button>
@@ -460,8 +537,17 @@
             if (e.key === 'Enter') saveEdit();
         });
 
-        // 초기 렌더링
-        renderSites();
+        // 초기화
+        async function init() {
+            console.log('🚀 무역 앱 시작!');
+            console.log('📍 Supabase URL:', SUPABASE_URL);
+            await migrateLocalData();
+            await loadSites();
+            console.log('✅ 초기화 완료');
+        }
+
+        // 페이지 로드 시 초기화
+        init();
     </script>
 </body>
 </html>
