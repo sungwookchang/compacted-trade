@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>무역 사이트 매니저</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .add-form {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-add {
+            background: #667eea;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-add:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-clear {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .btn-clear:hover {
+            background: #d0d0d0;
+        }
+
+        .sites-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .site-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .site-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .site-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .site-url {
+            color: #0066cc;
+            text-decoration: none;
+            word-break: break-all;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .site-url:hover {
+            text-decoration: underline;
+        }
+
+        .site-desc {
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .card-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-edit, .btn-delete {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #45a049;
+        }
+
+        .btn-delete {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #da190b;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: white;
+            padding: 40px;
+            font-size: 1.2em;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-save {
+            background: #667eea;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-save:hover {
+            background: #5568d3;
+        }
+
+        .btn-cancel {
+            background: #e0e0e0;
+            color: #666;
+            flex: 1;
+        }
+
+        .btn-cancel:hover {
+            background: #d0d0d0;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .sites-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📦 무역 사이트 매니저</h1>
+            <p>무역 관련 사이트를 효율적으로 관리하세요</p>
+        </header>
+
+        <div class="add-form">
+            <h2 style="margin-bottom: 20px; color: #333;">새 사이트 추가</h2>
+            <div class="form-group">
+                <label for="siteName">사이트 이름</label>
+                <input type="text" id="siteName" placeholder="예: Alibaba, Global Sources">
+            </div>
+            <div class="form-group">
+                <label for="siteUrl">웹사이트 URL</label>
+                <input type="url" id="siteUrl" placeholder="예: https://www.alibaba.com">
+            </div>
+            <div class="form-group">
+                <label for="siteDesc">설명</label>
+                <textarea id="siteDesc" placeholder="사이트에 대한 설명을 입력하세요"></textarea>
+            </div>
+            <div class="button-group">
+                <button class="btn-add" onclick="addSite()">추가</button>
+                <button class="btn-clear" onclick="clearForm()">초기화</button>
+            </div>
+        </div>
+
+        <div id="sitesList" class="sites-list"></div>
+        <div id="emptyState" class="empty-state" style="display: none;">
+            아직 등록된 사이트가 없습니다. 첫 번째 사이트를 추가해보세요!
+        </div>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h2>사이트 수정</h2>
+            <div class="form-group">
+                <label for="editName">사이트 이름</label>
+                <input type="text" id="editName">
+            </div>
+            <div class="form-group">
+                <label for="editUrl">웹사이트 URL</label>
+                <input type="url" id="editUrl">
+            </div>
+            <div class="form-group">
+                <label for="editDesc">설명</label>
+                <textarea id="editDesc"></textarea>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-save" onclick="saveEdit()">저장</button>
+                <button class="btn-cancel" onclick="closeModal()">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let sites = JSON.parse(localStorage.getItem('tradeSites')) || [];
+        let editingId = null;
+
+        function addSite() {
+            const name = document.getElementById('siteName').value.trim();
+            const url = document.getElementById('siteUrl').value.trim();
+            const desc = document.getElementById('siteDesc').value.trim();
+
+            if (!name || !url) {
+                alert('사이트 이름과 URL을 입력해주세요.');
+                return;
+            }
+
+            const site = {
+                id: Date.now(),
+                name,
+                url,
+                desc
+            };
+
+            sites.push(site);
+            saveSites();
+            clearForm();
+            renderSites();
+        }
+
+        function clearForm() {
+            document.getElementById('siteName').value = '';
+            document.getElementById('siteUrl').value = '';
+            document.getElementById('siteDesc').value = '';
+            document.getElementById('siteName').focus();
+        }
+
+        function deleteSite(id) {
+            if (confirm('이 사이트를 삭제하시겠습니까?')) {
+                sites = sites.filter(site => site.id !== id);
+                saveSites();
+                renderSites();
+            }
+        }
+
+        function openEditModal(id) {
+            editingId = id;
+            const site = sites.find(s => s.id === id);
+            document.getElementById('editName').value = site.name;
+            document.getElementById('editUrl').value = site.url;
+            document.getElementById('editDesc').value = site.desc;
+            document.getElementById('editModal').classList.add('active');
+            document.getElementById('editName').focus();
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').classList.remove('active');
+            editingId = null;
+        }
+
+        function saveEdit() {
+            const name = document.getElementById('editName').value.trim();
+            const url = document.getElementById('editUrl').value.trim();
+            const desc = document.getElementById('editDesc').value.trim();
+
+            if (!name || !url) {
+                alert('사이트 이름과 URL을 입력해주세요.');
+                return;
+            }
+
+            const siteIndex = sites.findIndex(s => s.id === editingId);
+            if (siteIndex !== -1) {
+                sites[siteIndex] = { ...sites[siteIndex], name, url, desc };
+                saveSites();
+                renderSites();
+                closeModal();
+            }
+        }
+
+        function saveSites() {
+            localStorage.setItem('tradeSites', JSON.stringify(sites));
+        }
+
+        function renderSites() {
+            const sitesList = document.getElementById('sitesList');
+            const emptyState = document.getElementById('emptyState');
+
+            if (sites.length === 0) {
+                sitesList.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            sitesList.innerHTML = sites.map(site => `
+                <div class="site-card">
+                    <div class="site-name">${escapeHtml(site.name)}</div>
+                    <a href="${site.url}" target="_blank" class="site-url">${escapeHtml(site.url)}</a>
+                    <div class="site-desc">${escapeHtml(site.desc)}</div>
+                    <div class="card-buttons">
+                        <button class="btn-edit" onclick="openEditModal(${site.id})">수정</button>
+                        <button class="btn-delete" onclick="deleteSite(${site.id})">삭제</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 모달 바깥쪽 클릭 시 닫기
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Enter 키 처리
+        document.getElementById('siteName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') addSite();
+        });
+
+        document.getElementById('siteUrl').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') addSite();
+        });
+
+        document.getElementById('editUrl').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') saveEdit();
+        });
+
+        // 초기 렌더링
+        renderSites();
+    </script>
+</body>
+</html>
