@@ -4,274 +4,81 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>무역 사이트 매니저</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-        }
-
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
+        .container { max-width: 900px; margin: 0 auto; }
+        header { text-align: center; color: white; margin-bottom: 30px; }
+        h1 { font-size: 2.5em; margin-bottom: 10px; }
         .add-form {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
+            background: white; padding: 25px; border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 30px;
         }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #333;
-            font-weight: 600;
-        }
-
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #333; font-weight: 600; }
         input, textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-            font-family: inherit;
+            width: 100%; padding: 10px; border: 1px solid #ddd;
+            border-radius: 5px; font-size: 14px; font-family: inherit;
         }
-
         input:focus, textarea:focus {
-            outline: none;
-            border-color: #667eea;
+            outline: none; border-color: #667eea;
             box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
         }
-
-        textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
+        textarea { resize: vertical; min-height: 80px; }
+        .button-group { display: flex; gap: 10px; margin-top: 20px; }
         button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s ease;
+            padding: 10px 20px; border: none; border-radius: 5px;
+            cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s ease;
         }
-
-        .btn-add {
-            background: #667eea;
-            color: white;
-            flex: 1;
-        }
-
-        .btn-add:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-clear {
-            background: #e0e0e0;
-            color: #666;
-        }
-
-        .btn-clear:hover {
-            background: #d0d0d0;
-        }
-
+        .btn-add { background: #667eea; color: white; flex: 1; }
+        .btn-add:hover { background: #5568d3; transform: translateY(-2px); }
+        .btn-clear { background: #e0e0e0; color: #666; }
+        .btn-clear:hover { background: #d0d0d0; }
         .sites-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
         }
-
         .site-card {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            background: white; border-radius: 10px; padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: all 0.3s ease;
         }
-
-        .site-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        .site-name {
-            font-size: 1.3em;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-
-        .site-url {
-            color: #0066cc;
-            text-decoration: none;
-            word-break: break-all;
-            font-size: 0.9em;
-            margin-bottom: 10px;
-            display: block;
-        }
-
-        .site-url:hover {
-            text-decoration: underline;
-        }
-
-        .site-desc {
-            color: #666;
-            font-size: 0.95em;
-            line-height: 1.5;
-            margin-bottom: 15px;
-        }
-
-        .card-buttons {
-            display: flex;
-            gap: 8px;
-        }
-
-        .btn-edit, .btn-delete {
-            flex: 1;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .btn-edit {
-            background: #4CAF50;
-            color: white;
-        }
-
-        .btn-edit:hover {
-            background: #45a049;
-        }
-
-        .btn-delete {
-            background: #f44336;
-            color: white;
-        }
-
-        .btn-delete:hover {
-            background: #da190b;
-        }
-
-        .empty-state {
-            text-align: center;
-            color: white;
-            padding: 40px;
-            font-size: 1.2em;
-        }
-
+        .site-card:hover { transform: translateY(-5px); box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2); }
+        .site-name { font-size: 1.3em; font-weight: bold; color: #667eea; margin-bottom: 10px; }
+        .site-url { color: #0066cc; text-decoration: none; word-break: break-all; font-size: 0.9em; margin-bottom: 10px; display: block; }
+        .site-url:hover { text-decoration: underline; }
+        .site-desc { color: #666; font-size: 0.95em; line-height: 1.5; margin-bottom: 15px; }
+        .card-buttons { display: flex; gap: 8px; }
+        .btn-edit, .btn-delete { flex: 1; padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .btn-edit { background: #4CAF50; color: white; }
+        .btn-edit:hover { background: #45a049; }
+        .btn-delete { background: #f44336; color: white; }
+        .btn-delete:hover { background: #da190b; }
+        .empty-state { text-align: center; color: white; padding: 40px; font-size: 1.2em; }
         .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
+            display: none; position: fixed; top: 0; left: 0; width: 100%;
+            height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000;
+            align-items: center; justify-content: center;
         }
-
-        .modal.active {
-            display: flex;
-        }
-
+        .modal.active { display: flex; }
         .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            background: white; padding: 30px; border-radius: 10px;
+            width: 90%; max-width: 500px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
         }
-
-        .modal-content h2 {
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .btn-save {
-            background: #667eea;
-            color: white;
-            flex: 1;
-        }
-
-        .btn-save:hover {
-            background: #5568d3;
-        }
-
-        .btn-cancel {
-            background: #e0e0e0;
-            color: #666;
-            flex: 1;
-        }
-
-        .btn-cancel:hover {
-            background: #d0d0d0;
-        }
-
+        .modal-content h2 { margin-bottom: 20px; color: #333; }
+        .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-save { background: #667eea; color: white; flex: 1; }
+        .btn-save:hover { background: #5568d3; }
+        .btn-cancel { background: #e0e0e0; color: #666; flex: 1; }
+        .btn-cancel:hover { background: #d0d0d0; }
         @media (max-width: 600px) {
-            h1 {
-                font-size: 1.8em;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-
-            .sites-list {
-                grid-template-columns: 1fr;
-            }
+            h1 { font-size: 1.8em; }
+            .sites-list { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -286,7 +93,7 @@
             <h2 style="margin-bottom: 20px; color: #333;">새 사이트 추가</h2>
             <div class="form-group">
                 <label for="siteName">사이트 이름</label>
-                <input type="text" id="siteName" placeholder="예: Alibaba, Global Sources">
+                <input type="text" id="siteName" placeholder="예: Alibaba">
             </div>
             <div class="form-group">
                 <label for="siteUrl">웹사이트 URL</label>
@@ -294,17 +101,17 @@
             </div>
             <div class="form-group">
                 <label for="siteDesc">설명</label>
-                <textarea id="siteDesc" placeholder="사이트에 대한 설명을 입력하세요"></textarea>
+                <textarea id="siteDesc" placeholder="사이트 설명"></textarea>
             </div>
             <div class="button-group">
-                <button class="btn-add" onclick="addSite()">추가</button>
-                <button class="btn-clear" onclick="clearForm()">초기화</button>
+                <button class="btn-add" id="btnAdd">추가</button>
+                <button class="btn-clear" id="btnClear">초기화</button>
             </div>
         </div>
 
         <div id="sitesList" class="sites-list"></div>
         <div id="emptyState" class="empty-state" style="display: none;">
-            아직 등록된 사이트가 없습니다. 첫 번째 사이트를 추가해보세요!
+            아직 등록된 사이트가 없습니다!
         </div>
     </div>
 
@@ -324,64 +131,39 @@
                 <textarea id="editDesc"></textarea>
             </div>
             <div class="modal-buttons">
-                <button class="btn-save" onclick="saveEdit()">저장</button>
-                <button class="btn-cancel" onclick="closeModal()">취소</button>
+                <button class="btn-save" id="btnSave">저장</button>
+                <button class="btn-cancel" id="btnCancel">취소</button>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Supabase 초기화
         const SUPABASE_URL = 'https://nzkewzfsktdfwykjdmwl.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56a2V3emZza3RkZnd5a2pkbXdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3MDgwNTQsImV4cCI6MjA4NjI4NDA1NH0.6UXcSFXuGJclsnGsVp9gyTrG635T5SoGycZAnjkoGs0';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
+        
+        let dbClient = null;
         let sites = [];
         let editingId = null;
-        let isLoading = false;
 
-        // 로컬 스토리지에서 기존 데이터 마이그레이션 (초기화 시 한 번만)
-        async function migrateLocalData() {
-            const localData = JSON.parse(localStorage.getItem('tradeSites')) || [];
-            if (localData.length > 0) {
-                try {
-                    console.log('📤 로컬 데이터 마이그레이션 시작:', localData.length + '개 항목');
-                    for (const site of localData) {
-                        await supabase.from('address_collection').insert({
-                            id: site.id,
-                            name: site.name,
-                            url: site.url,
-                            description: site.desc
-                        });
-                    }
-                    localStorage.removeItem('tradeSites');
-                    console.log('✅ 로컬 데이터 마이그레이션 완료');
-                } catch (error) {
-                    console.error('❌ 마이그레이션 오류:', error);
-                }
+        async function initSupabase() {
+            try {
+                dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                console.log('✅ Supabase 초기화 완료');
+                await loadSites();
+            } catch (error) {
+                console.error('❌ Supabase 초기화 실패:', error);
             }
         }
 
-        // Supabase에서 모든 사이트 로드
         async function loadSites() {
             try {
-                isLoading = true;
-                console.log('🔄 Supabase에서 사이트 로드 중...');
-                const { data, error } = await supabase
-                    .from('address_collection')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
+                const { data, error } = await dbClient.from('address_collection').select('*').order('created_at', { ascending: false });
                 if (error) throw error;
                 sites = data || [];
-                console.log('✅ 사이트 로드 완료:', sites.length + '개');
+                console.log('✅ 사이트 로드:', sites.length + '개');
                 renderSites();
             } catch (error) {
-                console.error('❌ 사이트 로드 오류:', error);
-                alert('데이터를 불러오는 중 오류가 발생했습니다.');
-            } finally {
-                isLoading = false;
+                console.error('❌ 로드 실패:', error);
             }
         }
 
@@ -391,71 +173,72 @@
             const description = document.getElementById('siteDesc').value.trim();
 
             if (!name || !url) {
-                alert('사이트 이름과 URL을 입력해주세요.');
+                alert('이름과 URL을 입력해주세요');
                 return;
             }
 
             try {
-                const id = Date.now();
-                console.log('📤 Supabase에 데이터 전송 시작:', { id, name, url, description });
-
-                const { data, error } = await supabase.from('address_collection').insert({
-                    id,
-                    name,
-                    url,
-                    description
+                const { error } = await dbClient.from('address_collection').insert({
+                    id: Date.now(),
+                    name, url, description
                 });
-
-                if (error) {
-                    console.error('❌ Supabase 오류:', error);
-                    throw error;
-                }
-
-                console.log('✅ 데이터 저장 성공:', data);
-                clearForm();
+                if (error) throw error;
+                console.log('✅ 추가 완료');
+                document.getElementById('siteName').value = '';
+                document.getElementById('siteUrl').value = '';
+                document.getElementById('siteDesc').value = '';
                 await loadSites();
             } catch (error) {
-                console.error('❌ 사이트 추가 오류:', error);
-                alert('사이트 추가 중 오류가 발생했습니다.\n\n오류: ' + error.message);
+                console.error('❌ 추가 실패:', error);
+                alert('추가 실패: ' + error.message);
             }
         }
 
-        function clearForm() {
-            document.getElementById('siteName').value = '';
-            document.getElementById('siteUrl').value = '';
-            document.getElementById('siteDesc').value = '';
-            document.getElementById('siteName').focus();
+        function renderSites() {
+            const list = document.getElementById('sitesList');
+            const empty = document.getElementById('emptyState');
+
+            if (sites.length === 0) {
+                list.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+            list.innerHTML = sites.map(s => `
+                <div class="site-card">
+                    <div class="site-name">${s.name}</div>
+                    <a href="${s.url}" target="_blank" class="site-url">${s.url}</a>
+                    <div class="site-desc">${s.description || ''}</div>
+                    <div class="card-buttons">
+                        <button class="btn-edit" onclick="openEdit(${s.id})">수정</button>
+                        <button class="btn-delete" onclick="delSite(${s.id})">삭제</button>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        async function deleteSite(id) {
-            if (confirm('이 사이트를 삭제하시겠습니까?')) {
-                try {
-                    const { error } = await supabase
-                        .from('address_collection')
-                        .delete()
-                        .eq('id', id);
-
-                    if (error) throw error;
-                    console.log('✅ 사이트 삭제 완료:', id);
-                    await loadSites();
-                } catch (error) {
-                    console.error('❌ 사이트 삭제 오류:', error);
-                    alert('사이트 삭제 중 오류가 발생했습니다.');
-                }
+        async function delSite(id) {
+            if (!confirm('삭제하시겠습니까?')) return;
+            try {
+                const { error } = await dbClient.from('address_collection').delete().eq('id', id);
+                if (error) throw error;
+                await loadSites();
+            } catch (error) {
+                alert('삭제 실패: ' + error.message);
             }
         }
 
-        function openEditModal(id) {
+        function openEdit(id) {
             editingId = id;
             const site = sites.find(s => s.id === id);
             document.getElementById('editName').value = site.name;
             document.getElementById('editUrl').value = site.url;
             document.getElementById('editDesc').value = site.description || '';
             document.getElementById('editModal').classList.add('active');
-            document.getElementById('editName').focus();
         }
 
-        function closeModal() {
+        function closeEdit() {
             document.getElementById('editModal').classList.remove('active');
             editingId = null;
         }
@@ -466,88 +249,41 @@
             const description = document.getElementById('editDesc').value.trim();
 
             if (!name || !url) {
-                alert('사이트 이름과 URL을 입력해주세요.');
+                alert('이름과 URL을 입력해주세요');
                 return;
             }
 
             try {
-                const { error } = await supabase
-                    .from('address_collection')
-                    .update({ name, url, description })
-                    .eq('id', editingId);
-
+                const { error } = await dbClient.from('address_collection').update({ name, url, description }).eq('id', editingId);
                 if (error) throw error;
-
-                console.log('✅ 사이트 수정 완료:', editingId);
+                closeEdit();
                 await loadSites();
-                closeModal();
             } catch (error) {
-                console.error('❌ 사이트 수정 오류:', error);
-                alert('사이트 수정 중 오류가 발생했습니다.');
+                alert('수정 실패: ' + error.message);
             }
         }
 
-        function renderSites() {
-            const sitesList = document.getElementById('sitesList');
-            const emptyState = document.getElementById('emptyState');
-
-            if (sites.length === 0) {
-                sitesList.innerHTML = '';
-                emptyState.style.display = 'block';
-                return;
-            }
-
-            emptyState.style.display = 'none';
-            sitesList.innerHTML = sites.map(site => `
-                <div class="site-card">
-                    <div class="site-name">${escapeHtml(site.name)}</div>
-                    <a href="${site.url}" target="_blank" class="site-url">${escapeHtml(site.url)}</a>
-                    <div class="site-desc">${escapeHtml(site.description || '')}</div>
-                    <div class="card-buttons">
-                        <button class="btn-edit" onclick="openEditModal(${site.id})">수정</button>
-                        <button class="btn-delete" onclick="deleteSite(${site.id})">삭제</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // 모달 바깥쪽 클릭 시 닫기
-        document.getElementById('editModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal();
-            }
+        document.getElementById('btnAdd').addEventListener('click', addSite);
+        document.getElementById('btnClear').addEventListener('click', () => {
+            document.getElementById('siteName').value = '';
+            document.getElementById('siteUrl').value = '';
+            document.getElementById('siteDesc').value = '';
+        });
+        document.getElementById('btnSave').addEventListener('click', saveEdit);
+        document.getElementById('btnCancel').addEventListener('click', closeEdit);
+        document.getElementById('editModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('editModal')) closeEdit();
         });
 
-        // Enter 키 처리
-        document.getElementById('siteName').addEventListener('keypress', function(e) {
+        document.getElementById('siteName').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addSite();
+        });
+        document.getElementById('siteUrl').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') addSite();
         });
 
-        document.getElementById('siteUrl').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') addSite();
-        });
-
-        document.getElementById('editUrl').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') saveEdit();
-        });
-
-        // 초기화
-        async function init() {
-            console.log('🚀 무역 앱 시작!');
-            console.log('📍 Supabase URL:', SUPABASE_URL);
-            await migrateLocalData();
-            await loadSites();
-            console.log('✅ 초기화 완료');
-        }
-
-        // 페이지 로드 시 초기화
-        init();
+        console.log('🚀 앱 시작');
+        initSupabase();
     </script>
 </body>
 </html>
